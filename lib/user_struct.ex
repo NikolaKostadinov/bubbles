@@ -12,7 +12,7 @@ defmodule UserStruct do
     username:    nil,
     password:    nil,
     friends:      [],
-    messages:     []
+    mailbox:      []
   ]
 
   @doc """
@@ -23,7 +23,7 @@ defmodule UserStruct do
     is_pid(user.id) or user.id === nil and
     is_atom(user.username)             and
     is_list(user.friends)              and
-    is_list(user.messages)             and
+    is_list(user.mailbox)              and
     user.password !== nil
 
   @doc """
@@ -75,9 +75,12 @@ defmodule UserStruct do
     %UserStruct{ user | friends: Enum.uniq(user.friends) }
   end
 
-  def update_user_messages(user, message) when is_sender(user, message) or is_reciver(user, message) do
-    new_messages = [ message | user.messages ]
-    %UserStruct{ user | messages: new_messages }
+  @doc """
+    Add message to user's mailbox
+  """
+  def add_message_mailbox(user, message) when is_sender(user, message) or is_reciver(user, message) do
+    new_messages = [ message | user.mailbox ]
+    %UserStruct{ user | mailbox: new_messages }
   end
 
 end

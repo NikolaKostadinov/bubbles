@@ -51,7 +51,7 @@ defmodule User do
 
   end
 
-  defp noreply(state) do
+  defp noreply( state ) do
     { :noreply, state }
   end
 
@@ -89,13 +89,13 @@ defmodule User do
     GenServer.cast(message.to, { :message, message })
 
     state
-      |> UserStruct.update_user_messages(message)
+      |> UserStruct.add_message_mailbox(message)
       |> noreply()
   end
 
   def handle_cast({ :message, message }, state) do
     state
-      |> UserStruct.update_user_messages(message)
+      |> UserStruct.add_message_mailbox(message)
       |> noreply()
   end
 
