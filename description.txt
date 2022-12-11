@@ -1,0 +1,45 @@
+Create a messaging application that will hold the following functinality:
+
+1. Creating of UserAccount - Register (username/email/password) a unique identifier should be created for each user, consider Discord approach of "#{username}##{four_digit_number}"
+2. Logging into an Account - Login (after 3 consequitive wrong attempts to login, the login should be locked for 1 minute (for that username). 
+This means that the User will not be allowed to login, until one minute has passed since the last attempt.)
+3. Each user should have a friendlist where he has access to all users that he has connected to.
+- A connection between friends happens with sending an Invite for a friend request on one end and accepting the request on the other end.
+- User A sends a friend request to User B -> then User B has the option to either accept or deny the request. 
+If the request is denied, User A can send another request in order to optain friendship with User B and the potential to send messages to him
+4. Sending a message to a User (messages can only be send if the user is in your friendlist and viceversa)
+- A message can either have a status of "send" or "read";
+- A message can be edited within 1 minute of the time of it being send, after that an edit should be impossible;
+- A message can be deleted if the user on the other end has not read that message (basically reverting the send action). 
+If the message has been read, the delete action should not be possible;
+
+The messaging client should expose the following functions:
+1. Registering a User
+2. Login with credentials (email and password probably, or whatever else you choose your credentials to be)
+
+Authorized actions (User cannot call any of these functionalities without being logged in):
+1. Sending a friend invite to a unique identifier (whatever you chose the unique identifier to be at step 1 above).
+2. Lising all of your friend invitations that have been send to you.
+3. Accept/decline a particular friend invitation.
+4. List all of your friends (your friendlist).
+5. Remove a user from your friendlist. (NB! This should remove all message history with that person as well).
+6. Sending a message to someone in your friendlist.
+7. Delete/remove a send message if it's not yet read by your friend.
+8. Edit a message within 1 minute of being send (no matter if it was read or not) (NB! Edited messages should have some marker indicating that there was an edit)
+9. List your chat with a friend of yours.
+10. List all of your unread messages.
+11. List all of your unread messages with a specific friend.
+12. List total amount of unread messages.
+
+
+Think about how to structure your data in order to have an easier time to implement the needed functionality. 
+All the information should be kept in state. Preferrably you can have 2 gen servers where one could be responsible about the Users/Authentication (like relationships between users etc.)
+and one that will be responsible about the messaging (like keeping the message history, etc.)
+
+It's preferrable to setup a "client" side of both Services (Account and Messaging), besically calling the necessary `GenServer.call/cast`s
+If you don't remember, the "client" side is something like so:
+```elixir
+def some_action(param) do
+   GenServer.call(__MODULE__, {:my_action, param})
+end
+```
