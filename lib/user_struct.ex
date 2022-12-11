@@ -50,4 +50,11 @@ defmodule UserStruct do
     %UserStruct{ user | friends: new_friends }
   end
 
+  @doc """
+    Filter out duplicate friends.
+  """
+  def uniq_friends(user) when is_user(user) do
+    %UserStruct{ user | friends: Enum.uniq(user.friends) }
+  end
+
 end

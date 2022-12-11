@@ -7,7 +7,7 @@ defmodule User do
     Start a `User` process with initial `UserStruct`.
   """
   def start(user) when is_user(user) do
-    GenServer.start(__MODULE__, user)
+    GenServer.start(__MODULE__, user, name: user.username)
   end
 
   @doc """
@@ -28,6 +28,16 @@ defmodule User do
 
   end
 
+  @doc """
+    Defriend two `User` processes.
+  """
+  def defriend(this_pid, other_pid) when is_pid(this_pid) and is_pid(other_pid)  do
+
+    GenServer.cast( this_pid, { :defriend, other_pid })
+    GenServer.cast(other_pid, { :defriend,  this_pid })
+
+  end
+
   @impl true
   def init(user) do
     { :ok, %UserStruct{ user | id: self() } }
@@ -43,7 +53,15 @@ defmodule User do
   def handle_cast({ :befriend, pid }, state) do
     state
     |> UserStruct.befriend(pid)
-    |> Enum.uniq()
+    |> UserStruct.uniq_friends()
+    |> (&{ :noreply, &1 }).()
+  end
+
+  @impl true
+  def handle_cast({ :defriend, pid }, state) do
+    state
+    |> UserStruct.uniq_friends()
+    |> UserStruct.defriend(pid)
     |> (&{ :noreply, &1 }).()
   end
 
