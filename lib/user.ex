@@ -5,13 +5,14 @@ defmodule User do
 
   @doc """
     Start a `User` process with initial `UserStruct`.
+    Need more info? Try this: `h UserStruct`
   """
   def start(user) when is_user(user) do
     GenServer.start(__MODULE__, user, name: user.username)
   end
 
   @doc """
-    Inspect `User` process's state.
+    Inspect `User` process's current state.
   """
   def inspect(pid) when is_pid(pid) do
     GenServer.cast(pid, :inspect)

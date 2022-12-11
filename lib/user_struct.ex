@@ -3,8 +3,24 @@ defmodule UserStruct do
   import MessageStruct
 
   @moduledoc """
-    Provides `UserStruct` `struct` and
-    functions associated with `UserStruct`.
+    Provides `UserStruct` `struct` and functions associated with `UserStruct`.
+
+    `UserStruct`'s field are:
+    * `:id`: `User` process's PID or `nil` if process not initiated
+    * `:username`: an atom which must be unique
+    * `:password`: @$#!&?%
+    * `:friends`: a list of PIDs
+    * `:mailbox`: a list of all user's messages which are of type `MessageStruct`
+
+    > **Example:**
+    >
+    > Here is how generate a `UserStruct` with `username` and `password` and
+    > use it to start a new `User` process:
+    >
+    > ```elixir
+    > iex(1)> user = %UserStruct{ username: username, password: password }
+    > iex(2)> User.start(user)
+    > ```
   """
 
   defstruct [
@@ -27,7 +43,7 @@ defmodule UserStruct do
     user.password !== nil
 
   @doc """
-    Guard checks if user could sent this message.
+    Guard checks if user could have sent this message.
   """
   defguard is_sender(user, message) when
     is_user(user)                    and
@@ -35,7 +51,7 @@ defmodule UserStruct do
     message.from === user.id
 
   @doc """
-    Guard checks if user could recive this message.
+    Guard checks if user could have recive this message.
   """
   defguard is_reciver(user, message) when
     is_user(user)                       and
@@ -51,7 +67,9 @@ defmodule UserStruct do
   @doc """
     This functions is the definition of
     love and joy. It befirends the pid of
-    the *second* user to the state of the *first*.
+    the *second* user to the struct of the *first*.
+    This function might return a `UserStruct` with
+    duplicate friends.
   """
   def befriend(user, pid) when is_user(user) and is_pid(pid) do
     new_friends = [ pid | user.friends ]
@@ -61,7 +79,9 @@ defmodule UserStruct do
   @doc """
     This functions is the definition of
     hate. It defirends the pid of the
-    *second* user from the state of the *first*.
+    *second* user from the struct of the *first*.
+    This function removes only one instance of
+    `pid` in `user.friends`
   """
   def defriend(user, pid) when is_user(user) and is_pid(pid) do
     new_friends = List.delete(user.friends, pid)
@@ -70,13 +90,25 @@ defmodule UserStruct do
 
   @doc """
     Filter out duplicate friends.
+
+    > **Example:**
+    >
+    > Suppose `user` has friends `[#PID<0.168.0>,#PID<0.168.0>,#PID<0.169.0>]`.
+    > Than `UserStruct.uniq_friends(user)` will filter one of the `#PID<0.168.0>` pids.
+    >
+    > ```elixir
+    >   iex(1)> user = UserStruct.uniq_friends(user)
+    >   iex(2)> user.friends
+        [#PID<0.168.0>,#PID<0.169.0>]
+    > ```
   """
   def uniq_friends(user) when is_user(user) do
     %UserStruct{ user | friends: Enum.uniq(user.friends) }
   end
 
   @doc """
-    Add message to user's mailbox
+    Add message to user's mailbox. There
+    might be messages with the same id.
   """
   def add_message_mailbox(user, message) when is_sender(user, message) or is_reciver(user, message) do
     new_messages = [ message | user.mailbox ]
