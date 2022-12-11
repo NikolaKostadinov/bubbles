@@ -7,9 +7,10 @@ defmodule MessageStruct do
   """
 
   defstruct [
-    from:   self(),
-    to:        nil,
-    value:      ""
+    from:     self(),
+    to:          nil,
+    value:        "",
+    seen:      false,
   ]
 
   @doc """
@@ -20,6 +21,7 @@ defmodule MessageStruct do
     is_pid(message.from)                 and
     is_pid(message.to)                   and
     is_binary(message.value)             and
+    is_boolean(message.seen)             and
     message.to    !== message.from       and
     message.value !== ""
 

@@ -6,22 +6,22 @@ defmodule UserStruct do
   """
 
   defstruct [
-    id:       self(),
+    id:          nil,
     username:    nil,
     password:    nil,
     friends:      [],
-    chats:        []
+    messages:     []
   ]
 
   @doc """
     Guard checks if user is a valid `UserStruct`.
   """
-  defguard is_user(user)          when
-    user.__struct__ === UserStruct and
-    is_pid(user.id)                and
-    is_list(user.friends)          and
-    is_list(user.chats)            and
-    user.username !== nil          and
+  defguard is_user(user)              when
+    user.__struct__ === UserStruct     and
+    is_pid(user.id) or user.id === nil and
+    is_list(user.friends)              and
+    is_list(user.messages)             and
+    user.username !== nil              and
     user.password !== nil
 
   @doc """
