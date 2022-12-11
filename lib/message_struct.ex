@@ -49,4 +49,8 @@ defmodule MessageStruct do
     %MessageStruct{ message | id: Enum.random(@id_range) }
   end
 
+  def read(message) when is_message(message) do
+    %MessageStruct{ message | seen: true }
+  end
+
 end

@@ -55,6 +55,24 @@ defmodule User do
 
   end
 
+  def state(username, password) when is_atom(username) do
+    username
+      |> Process.whereis()
+      |> state(password)
+  end
+
+  def state(pid, password) when is_pid(pid) do
+
+    user = GenServer.call(pid, :state)
+
+    if password !== user.password do
+      nil
+    else
+      user
+    end
+
+  end
+
   defp noreply( state ) do
     { :noreply, state }
   end
@@ -62,6 +80,21 @@ defmodule User do
   @impl true
   def init(user) do
     { :ok, %UserStruct{ user | id: self() } }
+  end
+
+  @impl true
+  def handle_call(:state, _from, state) do
+    { :reply, state, state }
+  end
+
+  @impl true
+  def handle_call(:messages, _from, state) do
+
+    state.messages
+      |> Enum.map(&MessageStruct.read/1)
+      |> (&%UserStruct{ state | mailbox: &1 }).()
+      |> (&{ :reply, &1, &1 }).()
+
   end
 
   @impl true
