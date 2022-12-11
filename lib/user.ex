@@ -39,6 +39,9 @@ defmodule User do
 
   end
 
+  @doc """
+    Make two users communicate.
+  """
   def send_message(from, to, value) when is_pid(from) and is_pid(to) do
 
     message = %MessageStruct{
@@ -71,17 +74,17 @@ defmodule User do
   @impl true
   def handle_cast({ :befriend, pid }, state) do
     state
-    |> UserStruct.befriend(pid)
-    |> UserStruct.uniq_friends()
-    |> noreply()
+      |> UserStruct.befriend(pid)
+      |> UserStruct.uniq_friends()
+      |> noreply()
   end
 
   @impl true
   def handle_cast({ :defriend, pid }, state) do
     state
-    |> UserStruct.uniq_friends()
-    |> UserStruct.defriend(pid)
-    |> noreply()
+      |> UserStruct.uniq_friends()
+      |> UserStruct.defriend(pid)
+      |> noreply()
   end
 
   @impl true

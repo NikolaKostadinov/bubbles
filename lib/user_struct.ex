@@ -106,13 +106,26 @@ defmodule UserStruct do
     %UserStruct{ user | friends: Enum.uniq(user.friends) }
   end
 
+  def friendly_ids(user) when is_user(user) do
+    ids = fn x -> x.id end
+    Enum.filter(user.friends, ids)
+  end
+
   @doc """
     Add message to user's mailbox. There
     might be messages with the same id.
   """
   def add_message_mailbox(user, message) when is_sender(user, message) or is_reciver(user, message) do
-    new_messages = [ message | user.mailbox ]
-    %UserStruct{ user | mailbox: new_messages }
+
+    friends = friendly_ids(user)
+
+    if message.to in friends or message.from in friends do
+     new_messages = [ message | user.mailbox ]
+     %UserStruct{ user | mailbox: new_messages }
+    else
+      user
+    end
+
   end
 
 end

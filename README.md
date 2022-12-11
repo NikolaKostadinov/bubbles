@@ -4,4 +4,4 @@
 
 # Bubbles
 
-Bubbles is my Elixir project.
+Bubbles is my Elixir project as intern.
