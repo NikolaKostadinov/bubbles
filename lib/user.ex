@@ -1,7 +1,7 @@
 defmodule User do
 
-  use    GenServer
-  import UserStruct
+  use        GenServer
+  import    UserStruct
 
   @doc """
     Start a `User` process with initial `UserStruct`.
@@ -31,11 +31,28 @@ defmodule User do
   @doc """
     Defriend two `User` processes.
   """
-  def defriend(this_pid, other_pid) when is_pid(this_pid) and is_pid(other_pid)  do
+  def defriend(this_pid, other_pid) when is_pid(this_pid) and is_pid(other_pid) do
 
     GenServer.cast( this_pid, { :defriend, other_pid })
     GenServer.cast(other_pid, { :defriend,  this_pid })
 
+  end
+
+  def send_message(from, to, value) when is_pid(from) and is_pid(to) do
+
+    message = %MessageStruct{
+      from:      from,
+      to:          to,
+      value:    value,
+      seen:     false
+    }
+
+    GenServer.cast(from, { :send, message })
+
+  end
+
+  defp noreply(state) do
+    { :noreply, state }
   end
 
   @impl true
@@ -45,8 +62,9 @@ defmodule User do
 
   @impl true
   def handle_cast(:inspect, state) do
-    IO.inspect( state )
-    { :noreply, state }
+    state
+      |> IO.inspect()
+      |> noreply()
   end
 
   @impl true
@@ -54,7 +72,7 @@ defmodule User do
     state
     |> UserStruct.befriend(pid)
     |> UserStruct.uniq_friends()
-    |> (&{ :noreply, &1 }).()
+    |> noreply()
   end
 
   @impl true
@@ -62,7 +80,23 @@ defmodule User do
     state
     |> UserStruct.uniq_friends()
     |> UserStruct.defriend(pid)
-    |> (&{ :noreply, &1 }).()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_cast({ :send, message }, state) do
+
+    GenServer.cast(message.to, { :message, message })
+
+    state
+      |> UserStruct.update_user_messages(message)
+      |> noreply()
+  end
+
+  def handle_cast({ :message, message }, state) do
+    state
+      |> UserStruct.update_user_messages(message)
+      |> noreply()
   end
 
 end

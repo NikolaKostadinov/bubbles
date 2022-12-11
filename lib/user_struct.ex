@@ -1,5 +1,7 @@
 defmodule UserStruct do
 
+  import MessageStruct
+
   @moduledoc """
     Provides `UserStruct` `struct` and
     functions associated with `UserStruct`.
@@ -23,6 +25,22 @@ defmodule UserStruct do
     is_list(user.friends)              and
     is_list(user.messages)             and
     user.password !== nil
+
+  @doc """
+    Guard checks if user could sent this message.
+  """
+  defguard is_sender(user, message) when
+    is_user(user)                    and
+    is_message(message)              and
+    message.from === user.id
+
+  @doc """
+    Guard checks if user could recive this message.
+  """
+  defguard is_reciver(user, message) when
+    is_user(user)                       and
+    is_message(message)                 and
+    message.to === user.id
 
   @doc """
     Check if `UserStruct` is valid
@@ -55,6 +73,11 @@ defmodule UserStruct do
   """
   def uniq_friends(user) when is_user(user) do
     %UserStruct{ user | friends: Enum.uniq(user.friends) }
+  end
+
+  def update_user_messages(user, message) when is_sender(user, message) or is_reciver(user, message) do
+    new_messages = [ message | user.messages ]
+    %UserStruct{ user | messages: new_messages }
   end
 
 end
