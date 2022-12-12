@@ -1,6 +1,6 @@
 defmodule UserStruct do
 
-  import MessageStruct
+  #import MessageStruct
 
   @moduledoc """
     Provides `UserStruct` `struct` and functions associated with `UserStruct`.
@@ -9,8 +9,9 @@ defmodule UserStruct do
     * `:id`: `User` process's PID or `nil` if process not initiated
     * `:username`: an atom which must be unique
     * `:password`: @$#!&?%
-    * `:friends`: a list of PIDs
-    * `:mailbox`: a list of all user's messages which are of type `MessageStruct`
+    * `:friends`: a list of friendly `User` PIDs
+    * `:mailbox`: a list of all user's messages's PIDs
+    * `:active`: a boolean that specifies whether a client is logged as this user
 
     > **Example:**
     >
@@ -28,7 +29,8 @@ defmodule UserStruct do
     username:    nil,
     password:    nil,
     friends:      [],
-    mailbox:      []
+    mailbox:      [],
+    active:    false,
   ]
 
   @doc """
@@ -40,23 +42,8 @@ defmodule UserStruct do
     is_atom(user.username)             and
     is_list(user.friends)              and
     is_list(user.mailbox)              and
+    is_boolean(user.active)            and
     user.password !== nil
-
-  @doc """
-    Guard checks if user could have sent this message.
-  """
-  defguard is_sender(user, message) when
-    is_user(user)                    and
-    is_message(message)              and
-    message.from === user.id
-
-  @doc """
-    Guard checks if user could have recive this message.
-  """
-  defguard is_reciver(user, message) when
-    is_user(user)                       and
-    is_message(message)                 and
-    message.to === user.id
 
   @doc """
     Check if `UserStruct` is valid
@@ -71,8 +58,8 @@ defmodule UserStruct do
     This function might return a `UserStruct` with
     duplicate friends.
   """
-  def befriend(user, pid) when is_user(user) and is_pid(pid) do
-    new_friends = [ pid | user.friends ]
+  def befriend(user, user_pid) when is_user(user) and is_pid(user_pid) do
+    new_friends = [ user_pid | user.friends ]
     %UserStruct{ user | friends: new_friends }
   end
 
@@ -83,8 +70,8 @@ defmodule UserStruct do
     This function removes only one instance of
     `pid` in `user.friends`
   """
-  def defriend(user, pid) when is_user(user) and is_pid(pid) do
-    new_friends = List.delete(user.friends, pid)
+  def defriend(user, user_pid) when is_user(user) and is_pid(user_pid) do
+    new_friends = List.delete(user.friends, user_pid)
     %UserStruct{ user | friends: new_friends }
   end
 
@@ -104,21 +91,6 @@ defmodule UserStruct do
   """
   def uniq_friends(user) when is_user(user) do
     %UserStruct{ user | friends: Enum.uniq(user.friends) }
-  end
-
-  @doc """
-    Add message to user's mailbox. There
-    might be messages with the same id.
-  """
-  def add_message_mailbox(user, message) when is_sender(user, message) or is_reciver(user, message) do
-
-    if message.to in user.friends or message.from in user.friends do
-     new_messages = [ message | user.mailbox ]
-     %UserStruct{ user | mailbox: new_messages }
-    else
-      user
-    end
-
   end
 
 end

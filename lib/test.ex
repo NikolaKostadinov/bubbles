@@ -3,8 +3,8 @@ defmodule Test do
   @generic_name :ivcho
   @generic_pass "123456"
 
-  def user(username \\ @generic_name) when is_atom(username) do
-    %UserStruct{ username: username, password: @generic_pass }
+  def user(username \\ @generic_name, password \\ @generic_pass) do
+    %UserStruct{ username: username, password: password }
   end
 
   def process(username) when is_atom(username) do
@@ -14,7 +14,7 @@ defmodule Test do
   end
 
   def process(user) do
-    { :ok, process } = User.start(user)
+    { :ok, process } = User.create(user)
     process
   end
 

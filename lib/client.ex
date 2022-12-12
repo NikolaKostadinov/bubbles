@@ -3,8 +3,10 @@ defmodule Client do
   use GenServer
 
   def sign_in(username, password) do
-    user = User.state(username, password)
-    GenServer.start(__MODULE__, user.id)
+    user_pid = User.pid(username)
+    if User.auth(username, password) do
+      GenServer.start(__MODULE__, user_pid)
+    end
   end
 
   def inspect(pid) do

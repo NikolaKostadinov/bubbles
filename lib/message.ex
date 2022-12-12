@@ -7,18 +7,21 @@ defmodule Message do
 
   """
 
-  def start(from, to, value) do
-    message = %MessageStruct{ from: from, to: to, value: value }
-    start(message)
+  def write(from, to, value) do
+    %MessageStruct{
+      from:   from,
+      to:       to,
+      value: value
+    } |> write()
   end
 
-  def start(message) when is_message(message) do
+  def write(message) when is_message(message) do
     GenServer.start(__MODULE__, message)
   end
 
   @impl true
-  def init(state) do
-    { :ok, state }
+  def init(message) do
+    { :ok,  %MessageStruct{ message | id: self() } }
   end
 
 end
