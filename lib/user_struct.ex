@@ -62,8 +62,8 @@ defmodule UserStruct do
     %UserStruct{ user | active: false }
   end
 
-  def add_request(user, pid) when is_user(user) and is_pid(pid) do
-    new_requests = [ pid | user.requests ]
+  def add_request(user, from) when is_user(user) and is_pid(from) do
+    new_requests = [ from | user.requests ]
     %UserStruct{ user | requests: new_requests }
   end
 

@@ -3,7 +3,7 @@ defmodule Client do
   use GenServer
 
   def sign_in(username, password) do
-    if User.auth(username, password) do
+    if User.auth?(username, password) do
       user_pid = User.pid(username)
       client = %ClientStruct{
         user_pid: user_pid,
@@ -21,7 +21,7 @@ defmodule Client do
     user_pid = client.user_pid
     password = client.password
 
-    if User.auth(user_pid, password) do
+    if User.auth?(user_pid, password) do
       User.set_inactive(user_pid, password)
       :ok
     end

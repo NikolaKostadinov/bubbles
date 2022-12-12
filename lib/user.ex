@@ -17,7 +17,7 @@ defmodule User do
   @doc """
 
   """
-  def auth(username, password) when is_atom(username) do
+  def auth?(username, password) do
     user = state(username, password)
     is_password(password, user)
   end
@@ -79,6 +79,14 @@ defmodule User do
     GenServer.cast(pid, pattern(:deactivate, password))
   end
 
+  def send_request(from, password, to_username) when is_pid(from) and is_atom(to_username) do
+    if auth?(from, password) do
+      to_username
+        |> User.pid()
+        |> GenServer.cast({ :request, { :pid, from } })
+    end
+  end
+
   defp noreply( x ) do
     { :noreply, x }
   end
@@ -104,6 +112,13 @@ defmodule User do
   def handle_cast(pattern(:deactivate, password), state) when is_password(password, state) do
     state
       |> UserStruct.set_inactive()
+      |> noreply()
+  end
+
+  @impl true
+  def handle_cast({ :request, { :pid, from } }, state) do
+    state
+      |> UserStruct.add_request(from)
       |> noreply()
   end
 
