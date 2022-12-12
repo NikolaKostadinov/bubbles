@@ -54,6 +54,16 @@ defmodule UserStruct do
   def valid_user?( user) when is_user(user) do true  end
   def valid_user?(_user)                    do false end
 
+  @doc """
+    Filter out private data from a `UserStruct`.
+  """
+  def secure(user) when is_user(user) do
+    user
+      |> (&%UserStruct{ &1 | password: :private }).()
+      |> (&%UserStruct{ &1 | requests: :private }).()
+      |> (&%UserStruct{ &1 | mailbox:  :private }).()
+  end
+
   def set_active(user) when is_user(user) do
     %UserStruct{ user | active: true }
   end

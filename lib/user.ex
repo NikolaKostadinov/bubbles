@@ -31,14 +31,29 @@ defmodule User do
       |> User.pid()
       |> User.state(password)
   end
-
   def state(pid, password) when is_pid(pid) do
     GenServer.call(pid, pattern(:state, password))
   end
 
   @doc """
+    Return the public fields of the state of a `User` with given username or PID.
+  """
+  def state(username) when is_atom(username) do
+    username
+      |> User.pid()
+      |> User.state()
+  end
+  def state(pid) when is_pid(pid) do
+    GenServer.call(pid, :state)
+  end
+
+  def username(pid) do
+    User.state(pid).username
+  end
+
+  @doc """
     Inspect `User` process's current state.
-    User password is required.
+    **User password is required.**
   """
   def inspect(user, password) do
     state(user, password) |> IO.inspect()
@@ -54,7 +69,7 @@ defmodule User do
   end
 
   @doc """
-
+    Set a `User` process on `active: true`.
   """
   def set_active(username, password) when is_atom(username) do
     username
@@ -67,7 +82,7 @@ defmodule User do
   end
 
   @doc """
-
+    Set a `User` process on `active: false`.
   """
   def set_inactive(username, password) when is_atom(username) do
     username
@@ -79,6 +94,9 @@ defmodule User do
     GenServer.cast(pid, pattern(:deactivate, password))
   end
 
+  @doc """
+    Send a friend request to a given user.
+  """
   def send_request(from, password, to_username) when is_pid(from) and is_atom(to_username) do
     if auth?(from, password) do
       to_username
@@ -99,6 +117,11 @@ defmodule User do
   @impl true
   def handle_call(pattern(:state, password), _from, state) when is_password(password, state) do
     { :reply, state, state }
+  end
+
+  @impl true
+  def handle_call(:state, _from, state) do
+    { :reply, UserStruct.secure(state), state }
   end
 
   @impl true
