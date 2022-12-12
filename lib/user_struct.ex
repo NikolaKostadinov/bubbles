@@ -10,6 +10,7 @@ defmodule UserStruct do
     * `:username`: an atom which must be unique
     * `:password`: @$#!&?%
     * `:friends`: a list of friendly `User` PIDs
+    * `:requests`: a list of the PIDs of the users that request a friendship
     * `:mailbox`: a list of all user's messages's PIDs
     * `:active`: a boolean that specifies whether a client is logged as this user
 
@@ -29,6 +30,7 @@ defmodule UserStruct do
     username:    nil,
     password:    nil,
     friends:      [],
+    requests:     [],
     mailbox:      [],
     active:    false,
   ]
@@ -41,6 +43,7 @@ defmodule UserStruct do
     is_pid(user.id) or user.id === nil and
     is_atom(user.username)             and
     is_list(user.friends)              and
+    is_list(user.requests)             and
     is_list(user.mailbox)              and
     is_boolean(user.active)            and
     user.password !== nil
@@ -51,28 +54,22 @@ defmodule UserStruct do
   def valid_user?( user) when is_user(user) do true  end
   def valid_user?(_user)                    do false end
 
-  @doc """
-    This functions is the definition of
-    love and joy. It befirends the pid of
-    the *second* user to the struct of the *first*.
-    This function might return a `UserStruct` with
-    duplicate friends.
-  """
-  def befriend(user, user_pid) when is_user(user) and is_pid(user_pid) do
-    new_friends = [ user_pid | user.friends ]
-    %UserStruct{ user | friends: new_friends }
+  def set_active(user) when is_user(user) do
+    %UserStruct{ user | active: true }
   end
 
-  @doc """
-    This functions is the definition of
-    hate. It defirends the pid of the
-    *second* user from the struct of the *first*.
-    This function removes only one instance of
-    `pid` in `user.friends`
-  """
-  def defriend(user, user_pid) when is_user(user) and is_pid(user_pid) do
-    new_friends = List.delete(user.friends, user_pid)
-    %UserStruct{ user | friends: new_friends }
+  def set_inactive(user) when is_user(user) do
+    %UserStruct{ user | active: false }
+  end
+
+  def add_request(user, pid) when is_user(user) and is_pid(pid) do
+    new_requests = [ pid | user.requests ]
+    %UserStruct{ user | requests: new_requests }
+  end
+
+  def remove_request(user, pid) when is_user(user) and is_pid(pid) do
+    new_requests = user.requests -- [pid]
+    %UserStruct{ user | requests: new_requests }
   end
 
   @doc """
