@@ -111,6 +111,10 @@ defmodule User do
     GenServer.cast(request, { :befriend, pid })
   end
 
+  def decline(pid, password, request) do
+    GenServer.cast(pid, pattern(:decline, request, password))
+  end
+
   defp noreply( x ) do
     { :noreply, x }
   end
@@ -155,6 +159,13 @@ defmodule User do
   def handle_cast(pattern(:accept, request, password), state) when is_password(password, state) do
     state
       |> UserStruct.accept(request)
+      |> noreply()
+  end
+
+  @impl true
+  def handle_cast(pattern(:decline, request, password), state) when is_password(password, state) do
+    state
+      |> UserStruct.remove_request(request)
       |> noreply()
   end
 

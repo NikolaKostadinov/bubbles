@@ -110,8 +110,8 @@ defmodule Client do
     > **Example:**
     >
     > Suppose `:bubble` and `:hubble` had send you
-    > friend requests. To verify it you can call this
-    > function on your session:
+    > friend requests. To verify wheter it is true you
+    > can call this function on your session PID:
     >
     > ```elixir
     > iex(1)> me |> Client.inspect_requests()
@@ -147,19 +147,53 @@ defmodule Client do
     User.send_request(user_pid, password, username)
   end
 
+  @doc """
+    Accept a user's friend request.
+
+    > **Example:**
+    >
+    > Suppose `:bubble` had send you a friend request.
+    > To accept it simply use:
+    >
+    > ```elixir
+    > iex(1)> me |> Client.accept(:bubble)
+    > :ok
+    > ```
+  """
   def accept(pid, username) do
     requests = Client.requests(pid, true)
     if username in requests do
-      GenServer.cast(pid, { :accept, username })
+      client = Client.state(pid)
+      user_pid = client.user_pid
+      password = client.password
+      request = User.pid(username)
+      User.accept(user_pid, password, request)
     else
       :request_does_not_exist
     end
   end
 
+  @doc """
+    Accept a user's friend request.
+
+    > **Example:**
+    >
+    > Suppose `:bubble` had send you a friend request.
+    > To accept it simply use:
+    >
+    > ```elixir
+    > iex(1)> me |> Client.dec(:bubble)
+    > :ok
+    > ```
+  """
   def decline(pid, username) do
     requests = Client.requests(pid, true)
     if username in requests do
-      GenServer.cast(pid, { :decline, username })
+      client = Client.state(pid)
+      user_pid = client.user_pid
+      password = client.password
+      request = User.pid(username)
+      User.decline(user_pid, password, request)
     else
       :request_does_not_exist
     end
@@ -182,15 +216,6 @@ defmodule Client do
       user: User.state(state.user_pid)
     }
       |> IO.inspect()
-    { :noreply, state }
-  end
-
-  @impl true
-  def handle_cast({ :accept, username }, state) do
-    user_pid = state.user_pid
-    password = state.password
-    request = User.pid(username)
-    User.accept(user_pid, password, request)
     { :noreply, state }
   end
 
