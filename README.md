@@ -4,12 +4,19 @@
 
 # Bubbles
 
-Bubbles is my Elixir project as an intern.
+Bubbles is my Elixir project as an intern. It is a backend messaging app based on processes. The idea is that everything is a process.
+
+To sign up in Bubbles use `Client.sign_up/2`. The first argument is your username which must be an atom. The second one is your password. It must be a string. This function starts a `User` process.
+
+Let's create a user with username `:bubble` and password `"123456"` (shhhh). We will use `Client.sign_up/2`:
 
 ```elixir
 iex(1)> Client.sign_up(:bubble, "123456")
 :ok
 ```
+
+We have successfuly started a `User` process with name `:bubble`. To sign in as `:bubble` we will use `Client.sign_in/2`.
+
 
 ```elixir
 iex(2)> me = Client.sign_in(:bubble, "123456")
