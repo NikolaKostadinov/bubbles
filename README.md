@@ -54,3 +54,9 @@ iex(7)> you |> Client.inspect_requests()
 [:bubble]
 :ok
 ```
+
+```elixir
+iex(8)> you |> Client.accept(:bubble)
+[:bubble]
+:ok
+```

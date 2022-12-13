@@ -10,7 +10,7 @@ defmodule Client do
     > **Example:**
     >
     > ```elixir
-    > iex(1)> my_session = Client.sign_in(:me, "123456")
+    > iex(1)> me = Client.sign_in(:me, "123456")
     > ```
   """
   def sign_in(username, password) do
@@ -52,7 +52,7 @@ defmodule Client do
     > **Example:**
     >
     > ```elixir
-    > iex(1)> Client.sign_out(my_session)
+    > iex(1)> me |> Client.sign_out()
     > :ok
     > ```
   """
@@ -83,18 +83,6 @@ defmodule Client do
       |> User.state(password)
   end
 
-  def user_pid(pid) do
-    pid
-      |> Client.state()
-      |> Map.get(:user_pid)
-  end
-
-  def username(pid) do
-    pid
-      |> Client.state()
-      |> Map.get(:username)
-  end
-
   def requests(pid, usernames?) do
     result = pid
       |> Client.user()
@@ -115,6 +103,21 @@ defmodule Client do
     GenServer.cast(pid, :inspect)
   end
 
+  @doc """
+    This function inspects the list
+    of your friendly requests.
+
+    > **Example:**
+    >
+    > Suppose `:bubble` and `:hubble` had send you
+    > friend requests. To verify it you can call this
+    > function on your session:
+    >
+    > ```elixir
+    > iex(1)> me |> Client.inspect_requests()
+    > [:bubble, :hubble]
+    > ```
+  """
   def inspect_requests(pid) do
     pid
       |> Client.requests(true)
