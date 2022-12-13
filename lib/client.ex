@@ -95,6 +95,18 @@ defmodule Client do
     end
   end
 
+  def friends(pid, usernames?) do
+    result = pid
+      |> Client.user()
+      |> Map.get(:friends)
+
+    if usernames? do
+      Enum.map(result, &User.username/1)
+    else
+      result
+    end
+  end
+
   @doc """
     This function inspects the state
     of your session process.
@@ -121,6 +133,13 @@ defmodule Client do
   def inspect_requests(pid) do
     pid
       |> Client.requests(true)
+      |> IO.inspect()
+    :ok
+  end
+
+  def inspect_friends(pid) do
+    pid
+      |> Client.friends(true)
       |> IO.inspect()
     :ok
   end
