@@ -6,6 +6,7 @@ defmodule User do
   defguard is_password(password, user) when password == user.password
 
   defmacro pattern(command, password) do { command, { :pasword, password } } end
+  defmacro pattern(command, options, password) do { { command, options }, { :pasword, password } } end
 
   @doc """
     Return the PID of a `User` with given username.
@@ -105,6 +106,10 @@ defmodule User do
     end
   end
 
+  def accept(pid, password, request) do
+    GenServer.cast(pid, pattern(:accept, request, password))
+  end
+
   defp noreply( x ) do
     { :noreply, x }
   end
@@ -142,6 +147,13 @@ defmodule User do
   def handle_cast({ :request, { :pid, from } }, state) do
     state
       |> UserStruct.add_request(from)
+      |> noreply()
+  end
+
+  @impl true
+  def handle_cast(pattern(:accept, request, password), state) when is_password(password, state) do
+    state
+      |> UserStruct.accept(request)
       |> noreply()
   end
 

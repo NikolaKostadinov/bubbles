@@ -82,6 +82,17 @@ defmodule UserStruct do
     %UserStruct{ user | requests: new_requests }
   end
 
+  def accept(user, pid) when is_user(user) and is_pid(pid) do
+    user
+    |> remove_request(pid)
+    |> befriend(pid)
+  end
+
+  def befriend(user, pid) when is_user(user) and is_pid(pid) do
+    new_friends = [ pid | user.friends ]
+    %UserStruct{ user | friends: new_friends }
+  end
+
   @doc """
     Filter out duplicate friends.
 

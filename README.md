@@ -13,7 +13,7 @@ iex(1)> Client.sign_up(:bubble, "123456")
 
 ```elixir
 iex(2)> me = Client.sign_in(:bubble, "123456")
-#PID<0.151.0>
+#PID<0.150.0>
 ```
 
 ```elixir
@@ -52,4 +52,5 @@ iex(6)> me |> Client.send_request(:hubble)
 ```elixir
 iex(7)> you |> Client.inspect_requests()
 [:bubble]
+:ok
 ```

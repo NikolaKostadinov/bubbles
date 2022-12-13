@@ -72,6 +72,41 @@ defmodule Client do
     GenServer.call(pid, :state)
   end
 
+  def user(pid) do
+    password = pid
+      |> Client.state()
+      |> Map.get(:password)
+
+    pid
+      |> Client.state()
+      |> Map.get(:user_pid)
+      |> User.state(password)
+  end
+
+  def user_pid(pid) do
+    pid
+      |> Client.state()
+      |> Map.get(:user_pid)
+  end
+
+  def username(pid) do
+    pid
+      |> Client.state()
+      |> Map.get(:username)
+  end
+
+  def requests(pid, usernames?) do
+    result = pid
+      |> Client.user()
+      |> Map.get(:requests)
+
+    if usernames? do
+      Enum.map(result, &User.username/1)
+    else
+      result
+    end
+  end
+
   @doc """
     This function inspects the state
     of your session process.
@@ -81,16 +116,10 @@ defmodule Client do
   end
 
   def inspect_requests(pid) do
-    client = Client.state(pid)
-    user_pid = client.user_pid
-    password = client.password
-
-    user_pid
-      |> User.state(password)
-      |> Map.get(:requests)
-      |> Enum.map(&User.username/1)
+    pid
+      |> Client.requests(true)
       |> IO.inspect()
-      :ok
+    :ok
   end
 
   @doc """
@@ -115,6 +144,24 @@ defmodule Client do
     User.send_request(user_pid, password, username)
   end
 
+  def accept(pid, username) do
+    requests = Client.requests(pid, true)
+    if username in requests do
+      GenServer.cast(pid, { :accept, username })
+    else
+      :request_does_not_exist
+    end
+  end
+
+  def decline(pid, username) do
+    requests = Client.requests(pid, true)
+    if username in requests do
+      GenServer.cast(pid, { :decline, username })
+    else
+      :request_does_not_exist
+    end
+  end
+
   @impl true
   def init(state) do
     { :ok, state }
@@ -132,6 +179,15 @@ defmodule Client do
       user: User.state(state.user_pid)
     }
       |> IO.inspect()
+    { :noreply, state }
+  end
+
+  @impl true
+  def handle_cast({ :accept, username }, state) do
+    user_pid = state.user_pid
+    password = state.password
+    request = User.pid(username)
+    User.accept(user_pid, password, request)
     { :noreply, state }
   end
 
