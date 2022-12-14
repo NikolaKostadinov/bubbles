@@ -22,14 +22,14 @@ defmodule MessageStruct do
   @doc """
     Guard checks if message is a valid `MessageStruct`.
   """
-  defguard is_message(message)          when
-    message.__struct__ === MessageStruct and
-    is_pid(message.id)                   and
-    is_pid(message.from)                 and
-    is_pid(message.to)                   and
-    is_binary(message.value)             and
-    is_boolean(message.seen)             and
-    message.to    !== message.from       and
+  defguard is_message(message)              when
+    message.__struct__ === MessageStruct     and
+    is_pid(message.id) or message.id === nil and
+    is_pid(message.from)                     and
+    is_pid(message.to)                       and
+    is_binary(message.value)                 and
+    is_boolean(message.seen)                 and
+    message.to    !== message.from           and
     message.value !== ""
 
   @doc """

@@ -93,6 +93,11 @@ defmodule UserStruct do
     %UserStruct{ user | friends: new_friends }
   end
 
+  def add_message(user, message_pid) when is_user(user) and is_pid(message_pid) do
+    new_mailbox = [ message_pid | user.mailbox ]
+    %UserStruct{ user | mailbox: new_mailbox }
+  end
+
   @doc """
     Filter out duplicate friends.
 

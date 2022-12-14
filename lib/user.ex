@@ -115,6 +115,15 @@ defmodule User do
     GenServer.cast(pid, pattern(:decline, request, password))
   end
 
+  def send_message(from, password, to_username, text_message) when is_pid(from) and is_atom(to_username) do
+    if auth?(from, password) do
+      to = User.pid(to_username)
+      { :ok, message_pid } = Message.write(from, to, text_message)
+      GenServer.cast(to  , { :add_message, message_pid })
+      GenServer.cast(from, { :add_message, message_pid })
+    end
+  end
+
   defp noreply( x ) do
     { :noreply, x }
   end
@@ -173,6 +182,13 @@ defmodule User do
   def handle_cast({ :befriend, pid }, state) do
     state
       |> UserStruct.befriend(pid)
+      |> noreply()
+  end
+
+  @impl true
+  def handle_cast({ :add_message, message_pid }, state) do
+    state
+      |> UserStruct.add_message(message_pid)
       |> noreply()
   end
 

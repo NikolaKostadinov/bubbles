@@ -56,8 +56,8 @@ defmodule Client do
     > :ok
     > ```
   """
-  def sign_out(pid) do
-    client = Client.state(pid)
+  def sign_out(client_pid) do
+    client = Client.state(client_pid)
     user_pid = client.user_pid
     password = client.password
     User.set_inactive(user_pid, password)
@@ -68,42 +68,42 @@ defmodule Client do
     This function returns the state
     of your session process.
   """
-  def state(pid) do
-    GenServer.call(pid, :state)
+  def state(client_pid) do
+    GenServer.call(client_pid, :state)
   end
 
-  def user(pid) do
-    password = pid
+  def user(client_pid) do
+    password = client_pid
       |> Client.state()
       |> Map.get(:password)
 
-    pid
+    client_pid
       |> Client.state()
       |> Map.get(:user_pid)
       |> User.state(password)
   end
 
-  def requests(pid, usernames?) do
-    result = pid
+  def requests(client_pid, usernames?) do
+    requests = client_pid
       |> Client.user()
       |> Map.get(:requests)
 
     if usernames? do
-      Enum.map(result, &User.username/1)
+      Enum.map(requests, &User.username/1)
     else
-      result
+      requests
     end
   end
 
-  def friends(pid, usernames?) do
-    result = pid
+  def friends(client_pid, usernames?) do
+    friends = client_pid
       |> Client.user()
       |> Map.get(:friends)
 
     if usernames? do
-      Enum.map(result, &User.username/1)
+      Enum.map(friends, &User.username/1)
     else
-      result
+      friends
     end
   end
 
@@ -111,8 +111,8 @@ defmodule Client do
     This function inspects the state
     of your session process.
   """
-  def inspect(pid) do
-    GenServer.cast(pid, :inspect)
+  def inspect(client_pid) do
+    GenServer.cast(client_pid, :inspect)
   end
 
   @doc """
@@ -130,15 +130,15 @@ defmodule Client do
     > [:bubble, :hubble]
     > ```
   """
-  def inspect_requests(pid) do
-    pid
+  def inspect_requests(client_pid) do
+    client_pid
       |> Client.requests(true)
       |> IO.inspect()
     :ok
   end
 
-  def inspect_friends(pid) do
-    pid
+  def inspect_friends(client_pid) do
+    client_pid
       |> Client.friends(true)
       |> IO.inspect()
     :ok
@@ -159,11 +159,11 @@ defmodule Client do
     > :ok
     > ```
   """
-  def send_request(pid, username) do
-    client = Client.state(pid)
+  def send_request(client_pid, to_username) do
+    client = Client.state(client_pid)
     user_pid = client.user_pid
     password = client.password
-    User.send_request(user_pid, password, username)
+    User.send_request(user_pid, password, to_username)
   end
 
   @doc """
@@ -179,13 +179,13 @@ defmodule Client do
     > :ok
     > ```
   """
-  def accept(pid, username) do
-    requests = Client.requests(pid, true)
-    if username in requests do
-      client = Client.state(pid)
+  def accept(client_pid, from_username) do
+    requests = Client.requests(client_pid, true)
+    if from_username in requests do
+      client = Client.state(client_pid)
       user_pid = client.user_pid
       password = client.password
-      request = User.pid(username)
+      request = User.pid(from_username)
       User.accept(user_pid, password, request)
     else
       :request_does_not_exist
@@ -205,17 +205,27 @@ defmodule Client do
     > :ok
     > ```
   """
-  def decline(pid, username) do
-    requests = Client.requests(pid, true)
-    if username in requests do
-      client = Client.state(pid)
+  def decline(client_pid, from_username) do
+    requests = Client.requests(client_pid, true)
+    if from_username in requests do
+      client = Client.state(client_pid)
       user_pid = client.user_pid
       password = client.password
-      request = User.pid(username)
+      request = User.pid(from_username)
       User.decline(user_pid, password, request)
     else
       :request_does_not_exist
     end
+  end
+
+  @doc """
+    Send a message.
+  """
+  def send_message(client_pid, to_username, text_message) do
+    client = Client.state(client_pid)
+    user_pid = client.user_pid
+    password = client.password
+    User.send_message(user_pid, password, to_username, text_message)
   end
 
   @impl true
