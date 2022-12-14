@@ -91,3 +91,14 @@ iex(10)> you |> Client.inspect_friends()
 [:bubble]
 :ok
 ```
+
+```elixir
+iex(11)> message = me |> Client.send_message(:hubble, "Hello World!")
+#PID<0.172.0>
+```
+
+```elixir
+iex(12)> you |> Client.read_message(message)
+"Hello World!"
+:ok
+```

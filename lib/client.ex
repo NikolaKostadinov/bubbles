@@ -228,6 +228,12 @@ defmodule Client do
     User.send_message(user_pid, password, to_username, text_message)
   end
 
+  def read_message(client_pid, message_pid) do
+    client = Client.state(client_pid)
+    user_pid = client.user_pid
+    Message.read(message_pid, user_pid)
+  end
+
   @impl true
   def init(state) do
     { :ok, state }

@@ -121,6 +121,7 @@ defmodule User do
       { :ok, message_pid } = Message.write(from, to, text_message)
       GenServer.cast(to  , { :add_message, message_pid })
       GenServer.cast(from, { :add_message, message_pid })
+      message_pid
     end
   end
 
