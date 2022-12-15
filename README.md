@@ -84,7 +84,7 @@ iex(8)> you |> Client.accept(:bubble)
 `Client.accept/2` is a function that accepts a user's friend request. To decline a request you can use `Client.decline/2`. Let's check if `:bubble` and `:hubble` are friends. We will inspect their friend list with `Client.inspect_friends/2`:
 
 ```elixir
-iex(9)>  me  |> Client.inspect_friends()
+iex(9)> me |> Client.inspect_friends()
 [:hubble]
 :ok
 iex(10)> you |> Client.inspect_friends()

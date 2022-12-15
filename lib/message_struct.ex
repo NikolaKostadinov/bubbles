@@ -11,12 +11,14 @@ defmodule MessageStruct do
     - `:seen`: a boolean that specifies whether the message had been seen
   """
 
+  @header_length 16
+
   defstruct [
     id:           nil,
     from:         nil,
     to:           nil,
     value:         "",
-    seen:       false,
+    seen?:      false,
   ]
 
   @doc """
@@ -28,7 +30,7 @@ defmodule MessageStruct do
     is_pid(message.from)                     and
     is_pid(message.to)                       and
     is_binary(message.value)                 and
-    is_boolean(message.seen)                 and
+    is_boolean(message.seen?)                and
     message.to    !== message.from           and
     message.value !== ""
 
@@ -39,14 +41,20 @@ defmodule MessageStruct do
   def valid_message?(_message)                          do false end
 
   def read(message) when is_message(message) do
-    %MessageStruct{ message | seen: true }
+    %MessageStruct{ message | seen?: true }
   end
 
   def header(message) when is_message(message) do
 
-    from  = User.username(message.from)
-    to    = User.username(message.to)
-    value = String.slice( message.value, 0, 16) <> "..."
+    from   = User.username(message.from)
+    to     = User.username(message.to)
+    sliced = String.slice( message.value, 0, @header_length)
+
+    value = unless message.value == sliced do
+      sliced <> "..."
+    else
+      message.value
+    end
 
     %{
       pid:    message.id,

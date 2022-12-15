@@ -9,9 +9,10 @@ defmodule Message do
 
   def write(from, to, value) do
     %MessageStruct{
-      from:   from,
-      to:       to,
-      value: value
+      from:      from,
+      to:          to,
+      value:    value,
+      seen?:    false,
     } |> write()
   end
 
@@ -55,16 +56,17 @@ defmodule Message do
   end
 
   @impl true
-  def handle_cast({ :read, see? }, state) do
-    read_message = fn x ->
-      if see? do MessageStruct.read(x)
-      else x end
+  def handle_cast({ :read, can_see? }, state) do
+    read_message = fn msg ->
+      if can_see? do
+        MessageStruct.read(msg)
+      else
+        msg
+      end
     end
-    state
-      |> read_message.()
-      |> Map.get(:value)
-      |> IO.inspect()
-    { :noreply, state }
+    new_state = read_message.(state)
+    IO.inspect(new_state.value)
+    { :noreply, new_state }
   end
 
 end

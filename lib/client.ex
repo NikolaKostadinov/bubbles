@@ -83,7 +83,7 @@ defmodule Client do
       |> User.state(password)
   end
 
-  def requests(client_pid, usernames?) do
+  def requests(client_pid, usernames? \\ true) do
     requests = client_pid
       |> Client.user()
       |> Map.get(:requests)
@@ -95,7 +95,7 @@ defmodule Client do
     end
   end
 
-  def friends(client_pid, usernames?) do
+  def friends(client_pid, usernames? \\ true) do
     friends = client_pid
       |> Client.user()
       |> Map.get(:friends)
@@ -219,7 +219,7 @@ defmodule Client do
   end
 
   @doc """
-    Send a message.
+    Send a message...
   """
   def send_message(client_pid, to_username, text_message) do
     client = Client.state(client_pid)
@@ -228,17 +228,28 @@ defmodule Client do
     User.send_message(user_pid, password, to_username, text_message)
   end
 
+  @doc """
+    Read a message...
+  """
   def read_message(client_pid, message_pid) do
     client = Client.state(client_pid)
     user_pid = client.user_pid
     Message.read(message_pid, user_pid)
   end
 
+  @doc """
+    Inspect mailbox...
+  """
   def inspect_mailbox(client_pid) do
+    username = client_pid
+      |> Client.state()
+      |> Map.get(:username)
     client_pid
       |> Client.user()
       |> Map.get(:mailbox)
       |> Enum.map(&Message.header/1)
+      |> Enum.filter(&(&1.to == username))
+      |> Enum.filter(&(!Map.get(&1, :seen?)))
       |> IO.inspect()
     :ok
   end
