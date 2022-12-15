@@ -42,4 +42,19 @@ defmodule MessageStruct do
     %MessageStruct{ message | seen: true }
   end
 
+  def header(message) when is_message(message) do
+
+    from  = User.username(message.from)
+    to    = User.username(message.to)
+    value = String.slice( message.value, 0, 16) <> "..."
+
+    %{
+      pid:    message.id,
+      from:   from      ,
+      to:     to        ,
+      value:  value
+    }
+
+  end
+
 end

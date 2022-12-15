@@ -234,6 +234,15 @@ defmodule Client do
     Message.read(message_pid, user_pid)
   end
 
+  def inspect_mailbox(client_pid) do
+    client_pid
+      |> Client.user()
+      |> Map.get(:mailbox)
+      |> Enum.map(&Message.header/1)
+      |> IO.inspect()
+    :ok
+  end
+
   @impl true
   def init(state) do
     { :ok, state }

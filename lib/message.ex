@@ -32,6 +32,12 @@ defmodule Message do
     GenServer.call(message_pid, :state)
   end
 
+  def header(message_pid) do
+    message_pid
+      |> Message.state()
+      |> MessageStruct.header()
+  end
+
   @impl true
   def init(message) do
     { :ok, %MessageStruct{ message | id: self() } }
