@@ -29,7 +29,7 @@ defmodule User do
   """
   def state(username, password) when is_atom(username) do
     username
-      |> User.pid()
+      |> User.pid
       |> User.state(password)
   end
   def state(pid, password) when is_pid(pid) do
@@ -41,21 +41,25 @@ defmodule User do
   """
   def state(username) when is_atom(username) do
     username
-      |> User.pid()
-      |> User.state()
+      |> User.pid
+      |> User.state
   end
   def state(pid) when is_pid(pid) do
     GenServer.call(pid, :state)
   end
 
   def username(pid) do
-    User.state(pid).username
+    pid
+      |> User.state
+      |> Map.get(:username)
   end
 
   def friends?(user1_pid, user1_password, user2_pid) do
-    user2_pid in user1_pid
-      |> User.state(user1_password)
-      |> Map.get(:friends)
+    user2_pid in (
+      user1_pid
+        |> User.state(user1_password)
+        |> Map.get(:friends)
+    )
   end
 
   @doc """
@@ -63,7 +67,9 @@ defmodule User do
     **User password is required.**
   """
   def inspect(user, password) do
-    state(user, password) |> IO.inspect()
+    user
+      |> state(password)
+      |> IO.inspect
     :ok
   end
 
@@ -80,7 +86,7 @@ defmodule User do
   """
   def set_active(username, password) when is_atom(username) do
     username
-      |> User.pid()
+      |> User.pid
       |> User.set_active(password)
   end
 
@@ -93,7 +99,7 @@ defmodule User do
   """
   def set_inactive(username, password) when is_atom(username) do
     username
-      |> User.pid()
+      |> User.pid
       |> User.set_active(password)
   end
 
@@ -107,8 +113,10 @@ defmodule User do
   def send_request(from, password, to_username) when is_pid(from) and is_atom(to_username) do
     if auth?(from, password) do
       to_username
-        |> User.pid()
+        |> User.pid
         |> GenServer.cast({ :request, { :pid, from } })
+    else
+      :invalid_password
     end
   end
 
@@ -159,50 +167,50 @@ defmodule User do
   @impl true
   def handle_cast(pattern(:activate, password), state) when is_password(password, state) do
     state
-      |> UserStruct.set_active()
-      |> noreply()
+      |> UserStruct.set_active
+      |> noreply
   end
 
   @impl true
   def handle_cast(pattern(:deactivate, password), state) when is_password(password, state) do
     state
-      |> UserStruct.set_inactive()
-      |> noreply()
+      |> UserStruct.set_inactive
+      |> noreply
   end
 
   @impl true
   def handle_cast({ :request, { :pid, from } }, state) do
     state
       |> UserStruct.add_request(from)
-      |> noreply()
+      |> noreply
   end
 
   @impl true
   def handle_cast(pattern(:accept, request, password), state) when is_password(password, state) do
     state
       |> UserStruct.accept(request)
-      |> noreply()
+      |> noreply
   end
 
   @impl true
   def handle_cast(pattern(:decline, request, password), state) when is_password(password, state) do
     state
       |> UserStruct.remove_request(request)
-      |> noreply()
+      |> noreply
   end
 
   @impl true
   def handle_cast({ :befriend, pid }, state) do
     state
       |> UserStruct.befriend(pid)
-      |> noreply()
+      |> noreply
   end
 
   @impl true
   def handle_cast({ :add_message, message_pid }, state) do
     state
       |> UserStruct.add_message(message_pid)
-      |> noreply()
+      |> noreply
   end
 
 end

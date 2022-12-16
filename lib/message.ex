@@ -13,7 +13,8 @@ defmodule Message do
       to:          to,
       value:    value,
       seen?:    false,
-    } |> write()
+    }
+      |> write()
   end
 
   def write(message) when is_message(message) do
@@ -31,14 +32,16 @@ defmodule Message do
     end
   end
 
+  def inspect(message_pid) do
+    GenServer.call(message_pid, :inspect)
+  end
+
   def state(message_pid) do
     GenServer.call(message_pid, :state)
   end
 
-  def header(message_pid) do
-    message_pid
-      |> Message.state()
-      |> MessageStruct.header()
+  defp noreply( x ) do
+    { :noreply, x }
   end
 
   @impl true
@@ -53,22 +56,28 @@ defmodule Message do
 
   @impl true
   def handle_cast(:inspect, state) do
-    IO.inspect(state)
-    { :noreply, MessageStruct.read(state) }
+    state
+      |> IO.inspect
+      |> noreply
   end
 
   @impl true
-  def handle_cast({ :read, can_see? }, state) do
-    read_message = fn msg ->
-      if can_see? do
-        MessageStruct.read(msg)
-      else
-        msg
-      end
-    end
-    new_state = read_message.(state)
-    IO.inspect(new_state.value)
-    { :noreply, new_state }
+  def handle_cast(:see, state) do
+    state
+      |> Map.get(:value)
+      |> IO.inspect
+    state
+      |> noreply
+  end
+
+  @impl true
+  def handle_cast(:read, state) do
+    state
+      |> Map.get(:value)
+      |> IO.inspect
+    state
+      |> MessageStruct.read
+      |> noreply
   end
 
 end

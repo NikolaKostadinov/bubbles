@@ -14,11 +14,12 @@ defmodule MessageStruct do
   @header_length 16
 
   defstruct [
-    id:           nil,
-    from:         nil,
-    to:           nil,
-    value:         "",
-    seen?:      false,
+    id:                        nil,
+    from:                      nil,
+    to:                        nil,
+    value:                      "",
+    send_at:      DateTime.utc_now,
+    seen?:                   false,
   ]
 
   @doc """
@@ -57,10 +58,11 @@ defmodule MessageStruct do
     end
 
     %{
-      pid:    message.id,
-      from:   from      ,
-      to:     to        ,
-      value:  value
+      pid:             message.id,
+      from:                  from,
+      to:                      to,
+      send_at:    message.send_at,
+      value:                value
     }
 
   end

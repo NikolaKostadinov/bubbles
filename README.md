@@ -103,7 +103,15 @@ Let's see what is is `:hubble`'s mailbox:
 
 ```elixir
 iex(12) you |> Client.inspect_mailbox
-[%{from: :bubble, pid: #PID<0.172.0>, to: :hubble, value: "Hello World!"}]
+[
+  %{
+    pid: #PID<0.172.0>,
+    from: :bubble,
+    to: :hubble,
+    send_at: ~U[2023-01-19 22:37:01.393000Z],
+    value: "Hello World!"
+  }
+]
 ```
 
 `Client.inspect_mailbox/1` inspects all unread messages, but is doesn't read them. The `:value` field shows only the first 16 characters of the message content. To read the message we will get the message's pid from the result and we will use it as the second argument for `Client.read_message`:

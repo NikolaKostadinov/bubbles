@@ -201,7 +201,7 @@ defmodule Client do
     > To accept it simply use:
     >
     > ```elixir
-    > iex(1)> me |> Client.dec(:bubble)
+    > iex(1)> me |> Client.decline(:bubble)
     > :ok
     > ```
   """
@@ -237,21 +237,63 @@ defmodule Client do
     Message.read(message_pid, user_pid)
   end
 
+  def message_headers(client_pid) do
+    username = client_pid
+      |> Client.state
+      |> Map.get(:username)
+    client_pid
+      |> Client.user
+      |> Map.get(:mailbox)
+      |> Enum.map(&Message.state/1)
+      |> Enum.filter(&(!Map.get(&1, :seen?)))
+      |> Enum.map(&MessageStruct.header/1)
+      |> Enum.filter(&(&1.to == username))
+  end
+
   @doc """
     Inspect mailbox...
   """
   def inspect_mailbox(client_pid) do
-    username = client_pid
-      |> Client.state()
-      |> Map.get(:username)
     client_pid
-      |> Client.user()
-      |> Map.get(:mailbox)
-      |> Enum.map(&Message.header/1)
-      |> Enum.filter(&(&1.to == username))
-      |> Enum.filter(&(!Map.get(&1, :seen?)))
-      |> IO.inspect()
+      |> Client.message_headers
+      |> IO.inspect
     :ok
+  end
+
+  @doc """
+
+  """
+  def inspect_mailbox_from(client_pid, username) do
+    client_pid
+      |> Client.message_headers
+      |> Enum.filter(&(&1.from == username))
+      |> IO.inspect
+    :ok
+  end
+
+  @doc """
+
+  """
+  def inspect_number_of_unread(client_pid) do
+    client_pid
+      |> Client.message_headers
+      |> Enum.count
+      |> IO.inspect
+    :ok
+  end
+
+  @doc """
+
+  """
+  def inspect_chat_with(client_pid, username) do
+    client_pid
+      |> Client.user
+      |> Map.get(:mailbox)
+      |> Enum.filter(&(
+        &1.from == username or
+        &1.to   == username
+      ))
+      |> IO.inspect
   end
 
   @impl true
@@ -269,7 +311,7 @@ defmodule Client do
     secured_state = %ClientStruct{ state | password: :private }
     %{
       client: secured_state,
-      user: User.state(state.user_pid)
+      user:   User.state(state.user_pid)
     }
       |> IO.inspect()
     { :noreply, state }
