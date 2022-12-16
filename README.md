@@ -69,7 +69,7 @@ iex(6)> me |> Client.send_request(:hubble)
 `:bubble` should have sent a request to `:hubble`. Let's verify this. We will inspect all `:hubble`'s requests with `Client.inspect_requests/1`. This functions takes one argument: the PID of the session. It inspects the list of requests. Here the result:
 
 ```elixir
-iex(7)> you |> Client.inspect_requests()
+iex(7)> you |> Client.inspect_requests
 [:bubble]
 :ok
 ```
@@ -84,21 +84,42 @@ iex(8)> you |> Client.accept(:bubble)
 `Client.accept/2` is a function that accepts a user's friend request. To decline a request you can use `Client.decline/2`. Let's check if `:bubble` and `:hubble` are friends. We will inspect their friend list with `Client.inspect_friends/2`:
 
 ```elixir
-iex(9)> me |> Client.inspect_friends()
+iex(9)> me |> Client.inspect_friends
 [:hubble]
 :ok
-iex(10)> you |> Client.inspect_friends()
+iex(10)> you |> Client.inspect_friends
 [:bubble]
 :ok
 ```
 
+This friendship is now official. `:bubble` and `:hubble` are now able to send messages to each other. To send a message we will use `Client.send_message/3`. The first argument of this function is the session PID. The second is the reciver's username which must me in the friend list and the third argument is the content of the message. It must be a binary. The function returns the PID of the message's process. Here is how `:bubble` could send `"Hello World!"` to `hubble`:
+
 ```elixir
-iex(11)> message = me |> Client.send_message(:hubble, "Hello World!")
+iex(11)> me |> Client.send_message(:hubble, "Hello World!")
 #PID<0.172.0>
 ```
 
+Let's see what is is `:hubble`'s mailbox:
+
 ```elixir
-iex(12)> you |> Client.read_message(message)
+iex(12) you |> Client.inspect_mailbox
+[%{from: :bubble, pid: #PID<0.172.0>, to: :hubble, value: "Hello World!"}]
+```
+
+`Client.inspect_mailbox/1` inspects all unread messages, but is doesn't read them. The `:value` field shows only the first 16 characters of the message content. To read the message we will get the message's pid from the result and we will use it as the second argument for `Client.read_message`:
+
+```elixir
+iex(13)> message = pid(0, 172, 0)
+#PID<0.172.0>
+iex(14)> you |> Client.read_message(message)
 "Hello World!"
+:ok
+```
+
+If `:hubble` inspects his mailbox he will see an empty array because `:hubble` had already read the message.
+
+```elixir
+iex(15) you |> Client.inspect_mailbox
+[]
 :ok
 ```

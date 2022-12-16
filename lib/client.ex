@@ -266,8 +266,9 @@ defmodule Client do
 
   @impl true
   def handle_cast(:inspect, state) do
+    secured_state = %ClientStruct{ state | password: :private }
     %{
-      client: state,
+      client: secured_state,
       user: User.state(state.user_pid)
     }
       |> IO.inspect()
