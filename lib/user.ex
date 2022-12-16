@@ -52,6 +52,12 @@ defmodule User do
     User.state(pid).username
   end
 
+  def friends?(user1_pid, user1_password, user2_pid) do
+    user2_pid in user1_pid
+      |> User.state(user1_password)
+      |> Map.get(:friends)
+  end
+
   @doc """
     Inspect `User` process's current state.
     **User password is required.**
@@ -115,13 +121,19 @@ defmodule User do
     GenServer.cast(pid, pattern(:decline, request, password))
   end
 
-  def send_message(from, password, to_username, text_message) when is_pid(from) and is_atom(to_username) do
-    if auth?(from, password) do
+  def send_message(from, from_password, to_username, text_message) when is_pid(from) and is_atom(to_username) do
+    if User.auth?(from, from_password) do
       to = User.pid(to_username)
-      { :ok, message_pid } = Message.write(from, to, text_message)
-      GenServer.cast(to  , { :add_message, message_pid })
-      GenServer.cast(from, { :add_message, message_pid })
-      message_pid
+      if User.friends?(from, from_password, to) do
+        { :ok, message_pid } = Message.write(from, to, text_message)
+        GenServer.cast(to  , { :add_message, message_pid })
+        GenServer.cast(from, { :add_message, message_pid })
+        message_pid
+      else
+        :not_friends
+      end
+    else
+      :invalid_password
     end
   end
 

@@ -24,8 +24,10 @@ defmodule Message do
     message = Message.state(message_pid)
     from?   = message.from == user_pid
     to?     = message.to   == user_pid
-    if from? or to? do
-      GenServer.cast(message_pid, { :read, to? })
+    cond do
+      from? -> GenServer.cast(message_pid, :see )
+      to?   -> GenServer.cast(message_pid, :read)
+      true  -> :permission_denied
     end
   end
 
