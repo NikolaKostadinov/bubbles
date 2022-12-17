@@ -185,13 +185,13 @@ defmodule User do
 
     Send a message to a given user.
   """
-  def send_message(from, from_password, to_username, text_message) when is_pid(from) and is_atom(to_username) do
-    if User.auth?(from, from_password) do
-      to = User.pid(to_username)
-      if User.friends?(from, to) do
-        { :ok, message_pid } = Message.write(from, to, text_message)
-        GenServer.cast(to  , { :add_message, message_pid })
-        GenServer.cast(from, { :add_message, message_pid })
+  def send_message(from_pid, from_password, to_username, text_message) when is_pid(from_pid) and is_atom(to_username) do
+    if User.auth?(from_pid, from_password) do
+      to_pid = User.pid(to_username)
+      if User.friends?(from_pid, to_pid) do
+        { :ok, message_pid } = Message.write(from_pid, to_pid, text_message)
+        GenServer.cast(  to_pid, { :add_message, message_pid })
+        GenServer.cast(from_pid, { :add_message, message_pid })
         message_pid
       else
         :not_friends
