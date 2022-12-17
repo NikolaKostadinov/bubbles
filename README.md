@@ -4,7 +4,9 @@
 
 # Bubbles
 
-Bubbles is my Elixir project as an intern. It is a backend messaging app based on processes. The idea is that everything is a process.
+Bubbles is my Elixir project as an intern. It is a backend messaging app based entirely on Elixir processes. The idea is that users, messages and clients are process which between each other.
+
+## Log In - Log Out
 
 To sign up in Bubbles use `Client.sign_up/2`. The first argument is your username which must be an atom. The second one is your password. It must be a string. This function starts a `User` process.
 
@@ -48,7 +50,9 @@ iex(3)> Client.inspect(me)
 :ok
 ```
 
-As you see we get two structures: `:client` and `:user`. `:client` is the state of our session process. `:user` is the state of our user process. We can see that `:bubble` is now active because of `active: true` in `UserStruct`. 
+As you see we get two structures: `:client` and `:user`. `:client` is the state of our session process. `:user` is the state of our user process. We can see that `:bubble` is now active because of `active?: true` in `UserStruct`. 
+
+## Friends
 
 Let's see how we can make some new friend. We will create a new user wirh username `:hubble`. Then we will log in as `:hubble`. We will save the new session in a new variable. Here is the code: 
 
@@ -93,7 +97,11 @@ iex(10)> you |> Client.inspect_friends
 :ok
 ```
 
-This friendship is now official. `:bubble` and `:hubble` are now able to send messages to each other. To send a message we will use `Client.send_message/3`. The first argument of this function is the session PID. The second is the reciver's username which must me in the friend list and the third argument is the content of the message. It must be a binary. The function returns the PID of the message's process. Here is how `:bubble` could send `"Hello World!"` to `hubble`:
+This friendship is now official. `:bubble` and `:hubble` are now able to send messages to each other.
+
+## "Hello World"
+
+To send a message we will use `Client.send_message/3`. The first argument of this function is the session PID. The second is the reciver's username which must me in the friend list and the third argument is the content of the message. It must be a binary. The function returns the PID of the message's process. Here is how `:bubble` could send `"Hello World!"` to `hubble`:
 
 ```elixir
 iex(11)> me |> Client.send_message(:hubble, "Hello World!")
@@ -132,3 +140,10 @@ iex(15) you |> Client.inspect_mailbox
 []
 :ok
 ```
+
+## Other Functions
+
+* `Client.inspect_mailbox_from/2`: this function inspects unread messages from a given user
+* `Client.inspect_number_of_unread/1`: this function inspects the total ammount of unread messages
+* `Client.inspect_chat_with/2`: this functions inspects all messages between you and a given user chronologically
+* `Client.active?/2`: this function returns the `:active?` field
