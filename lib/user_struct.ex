@@ -3,9 +3,12 @@ defmodule UserStruct do
   #import MessageStruct
 
   @moduledoc """
+    ## Description
+
     Provides `UserStruct` `struct` and functions associated with `UserStruct`.
 
-    `UserStruct`'s field are:
+    ## Structure fields
+
     * `:id`: `User` process's PID or `nil` if process not initiated
     * `:username`: an atom which must be unique
     * `:password`: @$#!&?%
@@ -13,16 +16,6 @@ defmodule UserStruct do
     * `:requests`: a list of the PIDs of the users that request a friendship
     * `:mailbox`: a list of all user's messages's PIDs
     * `:active`: a boolean that specifies whether a client is logged as this user
-
-    > **Example:**
-    >
-    > Here is how generate a `UserStruct` with `username` and `password` and
-    > use it to start a new `User` process:
-    >
-    > ```elixir
-    > iex(1)> user = %UserStruct{ username: username, password: password }
-    > iex(2)> User.start(user)
-    > ```
   """
 
   defstruct [
@@ -36,7 +29,9 @@ defmodule UserStruct do
   ]
 
   @doc """
-    Guard checks if user is a valid `UserStruct`.
+    ## Description
+
+    This guard checks if user is a valid `UserStruct`.
   """
   defguard is_user(user)              when
     user.__struct__ === UserStruct     and
@@ -49,13 +44,27 @@ defmodule UserStruct do
     user.password !== nil
 
   @doc """
-    Check if `UserStruct` is valid
-  """
-  def valid_user?( user) when is_user(user) do true  end
-  def valid_user?(_user)                    do false end
+    ## Description
 
-  @doc """
     Filter out private data from a `UserStruct`.
+
+    ## Example
+
+    ```elixir
+      iex(1)> UserStruct.secure(user)
+      %UserStruct{
+        id: #PID<0.156.0>,
+        username: :bob,
+        password: :private,
+        friends: [
+          #PID<0.157.0>,
+          #PID<0.158.0>
+        ],
+        requests: :private,
+        mailbox: :private,
+        active: true,
+      }
+    ```
   """
   def secure(user) when is_user(user) do
     user
@@ -96,24 +105,6 @@ defmodule UserStruct do
   def add_message(user, message_pid) when is_user(user) and is_pid(message_pid) do
     new_mailbox = [ message_pid | user.mailbox ]
     %UserStruct{ user | mailbox: new_mailbox }
-  end
-
-  @doc """
-    Filter out duplicate friends.
-
-    > **Example:**
-    >
-    > Suppose `user` has friends `[#PID<0.168.0>,#PID<0.168.0>,#PID<0.169.0>]`.
-    > Than `UserStruct.uniq_friends(user)` will filter one of the `#PID<0.168.0>` pids.
-    >
-    > ```elixir
-    >   iex(1)> user = UserStruct.uniq_friends(user)
-    >   iex(2)> user.friends
-        [#PID<0.168.0>,#PID<0.169.0>]
-    > ```
-  """
-  def uniq_friends(user) when is_user(user) do
-    %UserStruct{ user | friends: Enum.uniq(user.friends) }
   end
 
 end

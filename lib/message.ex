@@ -1,11 +1,11 @@
 defmodule Message do
 
-  use        GenServer
-  import MessageStruct
-
   @moduledoc """
 
   """
+
+  use        GenServer
+  import MessageStruct
 
   def write(from, to, value) do
     %MessageStruct{
@@ -14,7 +14,7 @@ defmodule Message do
       value:    value,
       seen?:    false,
     }
-      |> write()
+      |> write
   end
 
   def write(message) when is_message(message) do
@@ -23,8 +23,8 @@ defmodule Message do
 
   def read(message_pid, user_pid) when is_pid(message_pid) do
     message = Message.state(message_pid)
-    from?   = message.from == user_pid
-    to?     = message.to   == user_pid
+    from?   = message.from  == user_pid
+    to?     = message.to    == user_pid
     cond do
       from? -> GenServer.cast(message_pid, :see )
       to?   -> GenServer.cast(message_pid, :read)

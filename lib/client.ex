@@ -1,5 +1,52 @@
 defmodule Client do
 
+  @moduledoc """
+    # Bubbles API
+
+    ## Description
+
+    The `Client` module is Bubbles' API.
+    This module provides all the necessary
+    functions for Bubbles' users like:
+    * `Client.sign_up/2`
+    * `Client.sign_in/2`
+    * `Client.sign_out/1`
+    * `Client.inspect/1`
+    * `Client.inspect_requests/1`
+    * `Client.inspect_friends/1`
+    * `Client.send_request/2`
+    * `Client.accept/2`
+    * `Client.decline/2`
+    * `Client.send_message/3`
+    * `Client.read_message/2`
+    * `Client.inspect_mailbox/1`
+    * `Client.inspect_mailbox_from/2`
+    * `Client.inspect_number_of_unread/1`
+    * `Client.inspect_chat_with/2`
+
+    ## Example
+
+    Here is a simple example how to sign up,
+    befriend a user and send a message:
+
+    ```elixir
+      ...
+      iex(3)> Client.sign_up(:me, "123456")
+      :ok
+      iex(4)> me = Client.sign_in(:me, "123456")
+      #PID<0.160.0>
+      iex(5)> me |> Client.send_request(:you)
+      :ok
+      iex(6)> you |> Client.accept(:me)
+      :ok
+      iex(7)> me |> Client.send_message(:you, "Hello there!")
+      #PID<0.168.0>
+      iex(8)> you |> Client.read_message(pid(0, 168, 0))
+      "Hello there!"
+      :ok
+    ```
+  """
+
   use GenServer
 
   @doc """
@@ -16,7 +63,7 @@ defmodule Client do
       #PID<0.160.0>
     ```
   """
-  def sign_in(username, password) do
+  def sign_in(username, password) when is_atom(username) do
     user_pid = User.pid(username)
     client = %ClientStruct{
       user_pid: user_pid,
@@ -42,11 +89,11 @@ defmodule Client do
       :ok
     ```
   """
-  def sign_up(username, password) do
-    %UserStruct{
+  def sign_up(username, password) when is_atom(username) do
+    User.create(%UserStruct{
       username: username,
       password: password
-    } |> User.create()
+    })
     :ok
   end
 
@@ -63,7 +110,7 @@ defmodule Client do
       :ok
     ```
   """
-  def sign_out(client_pid) do
+  def sign_out(client_pid) when is_pid(client_pid) do
     client = Client.state(client_pid)
     user_pid = client.user_pid
     password = client.password
@@ -78,7 +125,7 @@ defmodule Client do
     of your session process wich is
     a `ClientStruct`.
   """
-  def state(client_pid) do
+  def state(client_pid) when is_pid(client_pid) do
     GenServer.call(client_pid, :state)
   end
 
@@ -89,7 +136,7 @@ defmodule Client do
     sessions's `User` process's
     state wich is a `UserStruct`.
   """
-  def user(client_pid) do
+  def user(client_pid) when is_pid(client_pid) do
     password = client_pid
       |> Client.state()
       |> Map.get(:password)
@@ -117,7 +164,7 @@ defmodule Client do
       [:random1,:random2,:random3]
     ```
   """
-  def requests(client_pid, usernames? \\ true) do
+  def requests(client_pid, usernames? \\ true) when is_pid(client_pid) and is_boolean(usernames?) do
     requests = client_pid
       |> Client.user()
       |> Map.get(:requests)
@@ -147,7 +194,7 @@ defmodule Client do
       [:friend1,:friend2,:friend3]
     ```
   """
-  def friends(client_pid, usernames? \\ true) do
+  def friends(client_pid, usernames? \\ true) when is_pid(client_pid) and is_boolean(usernames?) do
     friends = client_pid
       |> Client.user()
       |> Map.get(:friends)
@@ -187,7 +234,7 @@ defmodule Client do
       :ok
     ```
   """
-  def inspect(client_pid) do
+  def inspect(client_pid) when is_pid(client_pid) do
     GenServer.cast(client_pid, :inspect)
   end
 
@@ -209,7 +256,7 @@ defmodule Client do
       :ok
     ```
   """
-  def inspect_requests(client_pid) do
+  def inspect_requests(client_pid) when is_pid(client_pid) do
     client_pid
       |> Client.requests(true)
       |> IO.inspect()
@@ -230,7 +277,7 @@ defmodule Client do
       :ok
     ```
   """
-  def inspect_friends(client_pid) do
+  def inspect_friends(client_pid) when is_pid(client_pid) do
     client_pid
       |> Client.friends(true)
       |> IO.inspect()
@@ -254,7 +301,7 @@ defmodule Client do
       :ok
     ```
   """
-  def send_request(client_pid, to_username) do
+  def send_request(client_pid, to_username) when is_pid(client_pid) and is_atom(to_username) do
     client = Client.state(client_pid)
     user_pid = client.user_pid
     password = client.password
@@ -276,7 +323,7 @@ defmodule Client do
       :ok
     ```
   """
-  def accept(client_pid, from_username) do
+  def accept(client_pid, from_username) when is_pid(client_pid) and is_atom(from_username) do
     requests = Client.requests(client_pid, true)
     if from_username in requests do
       client = Client.state(client_pid)
@@ -304,7 +351,7 @@ defmodule Client do
       :ok
     ```
   """
-  def decline(client_pid, from_username) do
+  def decline(client_pid, from_username) when is_pid(client_pid) and is_atom(from_username) do
     requests = Client.requests(client_pid, true)
     if from_username in requests do
       client = Client.state(client_pid)
@@ -331,7 +378,7 @@ defmodule Client do
       #PID<0.172.0>
     ```
   """
-  def send_message(client_pid, to_username, text_message) do
+  def send_message(client_pid, to_username, text_message) when is_pid(client_pid) and is_atom(to_username) and is_binary(text_message) do
     client = Client.state(client_pid)
     user_pid = client.user_pid
     password = client.password
@@ -352,18 +399,40 @@ defmodule Client do
     To read the constent of the message:
 
     ```elixir
-    iex> me |> Client.read_message(pid(0, 172, 0))
+      iex> me |> Client.read_message(pid(0, 172, 0))
       "Hello there!"
       :ok
     ```
   """
-  def read_message(client_pid, message_pid) do
+  def read_message(client_pid, message_pid) when is_pid(client_pid) and is_pid(message_pid) do
     client = Client.state(client_pid)
     user_pid = client.user_pid
     Message.read(message_pid, user_pid)
   end
 
-  def message_headers(client_pid) do
+  @doc """
+    ## Description
+
+    This function returns the headers
+    of all user's messages. This function
+    does not alter the `:seen` fields.
+
+    ## Example
+
+    ```elixir
+      iex> headers = me |> Client.message_headers
+      [
+        %{
+          pid: #PID<0.172.0>,
+          from: :bubble,
+          to: :hubble,
+          send_at: ~U[2023-01-19 22:37:01.393000Z],
+          value: "Hello World!"
+        }
+      ]
+    ```
+  """
+  def message_headers(client_pid) when is_pid(client_pid) do
     username = client_pid
       |> Client.state
       |> Map.get(:username)
@@ -377,9 +446,29 @@ defmodule Client do
   end
 
   @doc """
-    Inspect mailbox...
+    ## Description
+
+    This function inspects the headers
+    of a user's mailbox. This function
+    does not alter the `:seen` fields.
+
+    ## Example
+
+    ```elixir
+      iex> me |> Client.inspect_mailbox
+      [
+        %{
+          pid: #PID<0.172.0>,
+          from: :bubble,
+          to: :hubble,
+          send_at: ~U[2023-01-19 22:37:01.393000Z],
+          value: "Hello World!"
+        }
+      ]
+      :ok
+    ```
   """
-  def inspect_mailbox(client_pid) do
+  def inspect_mailbox(client_pid) when is_pid(client_pid) do
     client_pid
       |> Client.message_headers
       |> IO.inspect
@@ -387,9 +476,12 @@ defmodule Client do
   end
 
   @doc """
+    ## Description
 
+    Inspect all messages headers
+    from an arbitrary user.
   """
-  def inspect_mailbox_from(client_pid, username) do
+  def inspect_mailbox_from(client_pid, username) when is_pid(client_pid) and is_atom(username) do
     client_pid
       |> Client.message_headers
       |> Enum.filter(&(&1.from == username))
@@ -398,9 +490,12 @@ defmodule Client do
   end
 
   @doc """
+    ## Description
 
+    Inspect the number of all
+    unread by you messages.
   """
-  def inspect_number_of_unread(client_pid) do
+  def inspect_number_of_unread(client_pid) when is_pid(client_pid) do
     client_pid
     |> Client.message_headers
     |> Enum.count
@@ -409,9 +504,37 @@ defmodule Client do
   end
 
   @doc """
+    ## Description
 
+    Inspect the list of all
+    your messages with a given user.
+
+    ## Example
+
+    ```elixir
+      iex(1)> me |> Client.inspect_chat_with(:hubble)
+      [
+        %MessageStruct{
+          id: #PID<0.198.0>,
+          from: :bubble,
+          to: :hubble,
+          value: "Hello!",
+          send_at: ~U[2022-12-16 15:05:12.393000Z],
+          seen?: false
+        },
+        %MessageStruct{
+          id: #PID<0.196.0>,
+          from: :hubble,
+          to: :bubble,
+          value: "Hello there!",
+          send_at: ~U[2022-12-16 15:05:06.393000Z],
+          seen?: true
+        }
+      ]
+      :ok
+    ```
   """
-  def inspect_chat_with(client_pid, username) do
+  def inspect_chat_with(client_pid, username) when is_pid(client_pid) and is_atom(username) do
     friend = User.pid(username)
     client_pid
       |> Client.user
@@ -452,7 +575,7 @@ defmodule Client do
       client: secured_state,
       user:   User.state(state.user_pid)
     }
-      |> IO.inspect()
+      |> IO.inspect
     { :noreply, state }
   end
 

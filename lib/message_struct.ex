@@ -1,12 +1,16 @@
 defmodule MessageStruct do
 
   @moduledoc """
+    ## Description
+
     Provides `MessageStruct` `struct` and functions associated with `MessageStruct`
+
+    ## Structure Fields
 
     `MessageStruct` fields are:
     - `:id`: the PID of the `Message` process
-    - `:from`: the PID that sent the message
-    - `:to`: the PID that recieved the message
+    - `:from`: the PID or the username of the user that sent the message
+    - `:to`: the PID or the username of the user that recieved the message
     - `:value`: the content of the message
     - `:seen`: a boolean that specifies whether the message had been seen
   """
@@ -17,39 +21,45 @@ defmodule MessageStruct do
     id:                        nil,
     from:                      nil,
     to:                        nil,
-    value:                      "",
+    value:                 <<0x0>>,
     send_at:      DateTime.utc_now,
     seen?:                   false,
   ]
 
   @doc """
-    Guard checks if message is a valid `MessageStruct`.
+    ## Description
+
+    This guard checks if a message is a valid `MessageStruct`.
   """
-  defguard is_message(message)              when
-    message.__struct__ === MessageStruct     and
-    is_pid(message.id) or message.id === nil and
-    is_pid(message.from)                     and
-    is_pid(message.to)                       and
-    is_binary(message.value)                 and
-    is_boolean(message.seen?)                and
-    message.to    !== message.from           and
+  defguard is_message(message)                   when
+    message.__struct__ === MessageStruct          and
+    is_pid(message.id)   or message.id === nil    and
+    is_pid(message.from) or is_atom(message.from) and
+    is_pid(message.to)   or is_atom(message.from) and
+    is_binary(message.value)                      and
+    is_boolean(message.seen?)                     and
+    message.to    !== message.from                and
     message.value !== ""
 
   @doc """
-    Check if `MessageStruct` is valid
-  """
-  def valid_message?( message) when is_message(message) do true  end
-  def valid_message?(_message)                          do false end
+    ## Description
 
+    This function sets `:seen?` field on `true`.
+  """
   def read(message) when is_message(message) do
     %MessageStruct{ message | seen?: true }
   end
 
+  @doc """
+    ## Description
+
+    Return message's header.
+  """
   def header(message) when is_message(message) do
 
-    from   = User.username(message.from)
-    to     = User.username(message.to)
-    sliced = String.slice( message.value, 0, @header_length)
+    from_username = User.username(message.from)
+    to_username   = User.username(message.to)
+    sliced = String.slice(message.value, 0, @header_length)
 
     value = unless message.value == sliced do
       sliced <> "..."
@@ -59,8 +69,8 @@ defmodule MessageStruct do
 
     %{
       pid:             message.id,
-      from:                  from,
-      to:                      to,
+      from:         from_username,
+      to:             to_username,
       send_at:    message.send_at,
       value:                value
     }
