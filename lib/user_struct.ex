@@ -15,7 +15,7 @@ defmodule UserStruct do
     * `:friends`: a list of friendly `User` PIDs
     * `:requests`: a list of the PIDs of the users that request a friendship
     * `:mailbox`: a list of all user's messages's PIDs
-    * `:active`: a boolean that specifies whether a client is logged as this user
+    * `:active?`: a boolean that specifies whether a client is logged as this user
   """
 
   defstruct [
@@ -25,7 +25,7 @@ defmodule UserStruct do
     friends:      [],
     requests:     [],
     mailbox:      [],
-    active:    false,
+    active?:   false,
   ]
 
   @doc """
@@ -40,7 +40,7 @@ defmodule UserStruct do
     is_list(user.friends)              and
     is_list(user.requests)             and
     is_list(user.mailbox)              and
-    is_boolean(user.active)            and
+    is_boolean(user.active?)           and
     user.password !== nil
 
   @doc """
@@ -62,7 +62,7 @@ defmodule UserStruct do
         ],
         requests: :private,
         mailbox: :private,
-        active: true,
+        active?: true,
       }
     ```
   """
@@ -73,35 +73,59 @@ defmodule UserStruct do
       |> (&%UserStruct{ &1 | mailbox:  :private }).()
   end
 
+  @doc """
+    ## Description
+
+    Set a `UserStruct`'s `:active?` field on `true`.
+  """
   def set_active(user) when is_user(user) do
-    %UserStruct{ user | active: true }
+    %UserStruct{ user | active?: true }
   end
 
+  @doc """
+    ## Description
+
+    Set a `UserStruct`'s `:active?` field on `false`.
+  """
   def set_inactive(user) when is_user(user) do
-    %UserStruct{ user | active: false }
+    %UserStruct{ user | active?: false }
   end
 
-  def add_request(user, from) when is_user(user) and is_pid(from) do
-    new_requests = [ from | user.requests ]
+  @doc """
+    ## Description
+
+    Append a new request to the `:request` list of a `UserStruct`.
+  """
+  def add_request(user, from_pid) when is_user(user) and is_pid(from_pid) do
+    new_requests = [ from_pid | user.requests ]
     %UserStruct{ user | requests: new_requests }
   end
 
-  def remove_request(user, pid) when is_user(user) and is_pid(pid) do
-    new_requests = user.requests -- [pid]
+  @doc """
+    ## Description
+
+    Remove a request from the `:request` list of a `UserStruct`.
+  """
+  def remove_request(user, from_pid) when is_user(user) and is_pid(from_pid) do
+    new_requests = user.requests -- [from_pid]
     %UserStruct{ user | requests: new_requests }
   end
 
-  def accept(user, pid) when is_user(user) and is_pid(pid) do
-    user
-    |> remove_request(pid)
-    |> befriend(pid)
-  end
+  @doc """
+    ## Description
 
-  def befriend(user, pid) when is_user(user) and is_pid(pid) do
-    new_friends = [ pid | user.friends ]
+    Befriend a `UserStruct` to a friendly `User` pid.
+  """
+  def befriend(user, friendly_pid) when is_user(user) and is_pid(friendly_pid) do
+    new_friends = [ friendly_pid | user.friends ]
     %UserStruct{ user | friends: new_friends }
   end
 
+  @doc """
+    ## Description
+
+    Add a `Message` process's PID to the mailbox of a `UserStruct`.
+  """
   def add_message(user, message_pid) when is_user(user) and is_pid(message_pid) do
     new_mailbox = [ message_pid | user.mailbox ]
     %UserStruct{ user | mailbox: new_mailbox }

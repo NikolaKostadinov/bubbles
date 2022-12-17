@@ -42,7 +42,7 @@ iex(3)> Client.inspect(me)
     friends: [],
     requests: :private,
     mailbox: :private,
-    active: true
+    active?: true
   }
 }
 :ok

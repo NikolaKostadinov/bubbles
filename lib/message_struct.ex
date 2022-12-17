@@ -3,7 +3,8 @@ defmodule MessageStruct do
   @moduledoc """
     ## Description
 
-    Provides `MessageStruct` `struct` and functions associated with `MessageStruct`
+    This module provides `MessageStruct` structure
+    and functions associated with `MessageStruct`.
 
     ## Structure Fields
 
@@ -38,8 +39,7 @@ defmodule MessageStruct do
     is_pid(message.to)   or is_atom(message.from) and
     is_binary(message.value)                      and
     is_boolean(message.seen?)                     and
-    message.to    !== message.from                and
-    message.value !== ""
+    message.to    !== message.from
 
   @doc """
     ## Description
@@ -61,10 +61,10 @@ defmodule MessageStruct do
     to_username   = User.username(message.to)
     sliced = String.slice(message.value, 0, @header_length)
 
-    value = unless message.value == sliced do
-      sliced <> "..."
+    value = sliced <> unless message.value == sliced do
+      "..."
     else
-      message.value
+      ""
     end
 
     %{

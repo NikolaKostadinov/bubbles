@@ -7,7 +7,11 @@ defmodule Client do
 
     The `Client` module is Bubbles' API.
     This module provides all the necessary
-    functions for Bubbles' users like:
+    functions for Bubbles' users. Here is
+    a list of some of them:
+
+    ## Functions
+
     * `Client.sign_up/2`
     * `Client.sign_in/2`
     * `Client.sign_out/1`
@@ -23,6 +27,7 @@ defmodule Client do
     * `Client.inspect_mailbox_from/2`
     * `Client.inspect_number_of_unread/1`
     * `Client.inspect_chat_with/2`
+    * `Client.active?/2`
 
     ## Example
 
@@ -228,7 +233,7 @@ defmodule Client do
           friends: [],
           requests: :private,
           mailbox: :private,
-          active: true
+          active?: true
         }
       }
       :ok
@@ -329,8 +334,8 @@ defmodule Client do
       client = Client.state(client_pid)
       user_pid = client.user_pid
       password = client.password
-      request = User.pid(from_username)
-      User.accept(user_pid, password, request)
+      from = User.pid(from_username)
+      User.accept(user_pid, password, from)
     else
       :request_does_not_exist
     end
@@ -556,6 +561,28 @@ defmodule Client do
       )
       |> IO.inspect
     :ok
+  end
+
+  @doc """
+    ## Description
+
+    Return a boolen which specifice
+    whether you or a given user is
+    currently active. If the second
+    argument is not provided or it
+    is `nil` this function will
+    return wheter you are active.
+  """
+  def active?(client_pid, username \\ nil) when is_pid(client_pid) do
+    unless username == nil do
+      username
+        |> User.state
+        |> Map.get(:active?)
+    else
+      client_pid
+        |> Client.user
+        |> Map.get(:active?)
+    end
   end
 
   @impl true
