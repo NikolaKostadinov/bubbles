@@ -47,6 +47,7 @@ iex(3)> Client.inspect(me)
 }
 :ok
 ```
+
 As you see we get two structures: `:client` and `:user`. `:client` is the state of our session process. `:user` is the state of our user process. We can see that `:bubble` is now active because of `active: true` in `UserStruct`. 
 
 Let's see how we can make some new friend. We will create a new user wirh username `:hubble`. Then we will log in as `:hubble`. We will save the new session in a new variable. Here is the code: 
